@@ -4,6 +4,7 @@ import HeroContent from "../components/HeroContent";
 import HeroVisual from "../components/HeroVisual";
 import Input from "./Input";
 import TheRead from "./TheRead";
+import MirrorTest from "./MirrorTest";
 
 export default function Home() {
   const [screen, setScreen] = useState("home");
@@ -20,6 +21,14 @@ export default function Home() {
     setScreen("read");
   }
 
+  function handleOpenMirrorTest() {
+    setScreen("mirror-test");
+  }
+
+  function handleBackToRead() {
+    setScreen("read");
+  }
+
   if (screen === "input") {
     return <Input onContinue={handleApplicationSubmit} />;
   }
@@ -31,6 +40,18 @@ export default function Home() {
         applicationType={application.applicationType}
         role={application.role}
         focusAreas={application.focusAreas}
+        onOpenMirrorTest={handleOpenMirrorTest}
+      />
+    );
+  }
+
+  if (screen === "mirror-test") {
+    return (
+      <MirrorTest
+        originalText={application.text}
+        applicationType={application.applicationType}
+        role={application.role}
+        onBack={handleBackToRead}
       />
     );
   }

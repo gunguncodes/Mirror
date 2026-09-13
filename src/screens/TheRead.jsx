@@ -7,6 +7,7 @@ export default function TheRead({
   applicationType,
   role,
   focusAreas,
+  onOpenMirrorTest,
 }) {
   const [evaluation, setEvaluation] = useState(null);
   const [error, setError] = useState("");
@@ -142,7 +143,9 @@ export default function TheRead({
 
                 <div className="mt-8 border-t border-(--line) pt-6">
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-(--muted)">Simulation confidence</p>
+                    <p className="text-sm text-(--muted)">
+                      Simulation confidence
+                    </p>
 
                     <span className="text-sm font-medium">
                       {evaluation.confidence}
@@ -243,7 +246,7 @@ export default function TheRead({
               </div>
             </section>
 
-            <section className="mt-10 grid gap-10 border-t border-(--line) pt-10 lg:grid-cols-2">
+            <section className="mt-10 grid gap-10 border-t border-(--line) pt-10">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
                   Your application
@@ -255,7 +258,35 @@ export default function TheRead({
                   </p>
                 </div>
               </div>
+            </section>
 
+            <section className="mt-10 border border-(--ink) p-8">
+              <div className="max-w-3xl">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--accent)">
+                  Next experiment
+                </p>
+
+                <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
+                  What happens if you change the wording?
+                </h2>
+
+                <p className="mt-4 text-sm leading-relaxed text-(--muted)">
+                  Run a controlled comparison between your original application
+                  and a revised version. Keep the underlying experience the
+                  same and see which observable screening signals change.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={onOpenMirrorTest}
+                  className="mt-7 border border-(--ink) bg-(--ink) px-7 py-3 text-sm font-medium text-(--paper) transition-colors hover:bg-(--paper) hover:text-(--ink)"
+                >
+                  Open Mirror Test →
+                </button>
+              </div>
+            </section>
+
+            <section className="mt-10 grid gap-10 border-t border-(--line) pt-10 lg:grid-cols-2">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
                   What this means
