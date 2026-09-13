@@ -7,21 +7,32 @@ import TheRead from "./TheRead";
 
 export default function Home() {
   const [screen, setScreen] = useState("home");
-  const [applicationText, setApplicationText] = useState("");
+
+  const [application, setApplication] = useState({
+    text: "",
+    applicationType: "Resume",
+    role: "",
+    focusAreas: [],
+  });
+
+  function handleApplicationSubmit(data) {
+    setApplication(data);
+    setScreen("read");
+  }
 
   if (screen === "input") {
-    return (
-      <Input
-        onContinue={(text) => {
-          setApplicationText(text);
-          setScreen("read");
-        }}
-      />
-    );
+    return <Input onContinue={handleApplicationSubmit} />;
   }
 
   if (screen === "read") {
-    return <TheRead applicationText={applicationText} />;
+    return (
+      <TheRead
+        applicationText={application.text}
+        applicationType={application.applicationType}
+        role={application.role}
+        focusAreas={application.focusAreas}
+      />
+    );
   }
 
   return (

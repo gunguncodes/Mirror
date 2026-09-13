@@ -1,110 +1,288 @@
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { evaluateApplication } from "../services/evaluateApplication";
 
-export default function TheRead({ applicationText }) {
-  const evaluation = evaluateApplication(applicationText);
+export default function TheRead({
+  applicationText,
+  applicationType,
+  role,
+  focusAreas,
+}) {
+  const [evaluation, setEvaluation] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function runEvaluation() {
+      setEvaluation(null);
+      setError("");
+
+      try {
+        const result = await evaluateApplication({
+          text: applicationText,
+          applicationType,
+          role,
+          focusAreas,
+        });
+
+        if (!cancelled) {
+          setEvaluation(result);
+        }
+      } catch (evaluationError) {
+        console.error("Mirror evaluation failed:", evaluationError);
+
+        if (!cancelled) {
+          setError(
+            evaluationError.message ||
+              "Mirror could not complete the analysis right now."
+          );
+        }
+      }
+    }
+
+    runEvaluation();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationText, applicationType, role, focusAreas]);
 
   return (
     <div className="min-h-screen bg-(--paper) text-(--ink)">
       <Header />
 
       <main className="mx-auto max-w-6xl px-6 py-16 sm:px-10 lg:px-16">
-        <div className="max-w-3xl">
-          <p className="mb-4 text-sm font-medium uppercase tracking-[0.16em] text-(--accent)">
-            The read
-          </p>
+        <header className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+            <span>The read</span>
+            <span aria-hidden="true">/</span>
+            <span>{applicationType}</span>
 
-          <h1 className="font-serif text-5xl leading-[0.95] tracking-[-0.03em] sm:text-6xl">
+            {role && (
+              <>
+                <span aria-hidden="true">/</span>
+                <span>{role}</span>
+              </>
+            )}
+          </div>
+
+          <h1 className="mt-5 font-serif text-5xl leading-[0.95] tracking-[-0.03em] sm:text-6xl">
             Here&apos;s how the system might read you.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-(--muted)">
-            This is a simulated screening read based on documented patterns
-            in automated hiring systems — not a prediction of any specific
-            employer&apos;s decision.
+            Mirror examines your application for patterns that may influence
+            an automated screening process. This is an educational simulation,
+            not a prediction of any employer&apos;s decision.
           </p>
-        </div>
+        </header>
 
-        <section className="mt-16 grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="border border-(--line) p-8">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
-              Your application
-            </p>
-
-            <div className="mt-6 max-h-80 overflow-y-auto border-t border-(--line) pt-6">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                {applicationText}
-              </p>
-            </div>
-          </div>
-
-          <div className="border border-(--line) p-8">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
-              Simulated screening score
-            </p>
-
-            <div className="mt-6 flex items-end gap-3">
-              <span className="font-serif text-8xl leading-none">
-                {evaluation.score}
-              </span>
-
-              <span className="mb-2 text-sm text-(--muted)">/ 100</span>
-            </div>
-
-            <p className="mt-8 border-t border-(--line) pt-6 text-sm leading-relaxed text-(--muted)">
-              This is a simulated signal, not a prediction of whether you
-              will receive an interview or job offer.
-            </p>
-          </div>
-        </section>
-
-        <section className="mt-10 border border-(--line)">
-          <div className="border-b border-(--line) px-6 py-5">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
-              What the system may notice
-            </p>
-          </div>
-
-          <div className="divide-y divide-(--line)">
-            {evaluation.signals.map((signal) => (
+        {!evaluation && !error && (
+          <section
+            className="mt-16 border border-(--line) p-8"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-4">
               <div
-                key={signal.category}
-                className="grid gap-3 p-6 sm:grid-cols-[160px_1fr]"
-              >
-                <p className="text-sm font-medium">{signal.category}</p>
+                className="h-5 w-5 animate-spin rounded-full border-2 border-(--line) border-t-(--ink)"
+                aria-hidden="true"
+              />
 
-                <div>
-                  <p className="text-sm font-medium text-(--accent)">
-                    {signal.status}
+              <div>
+                <p className="text-sm font-medium">
+                  Mirror is reading the application…
+                </p>
+
+                <p className="mt-1 text-sm text-(--muted)">
+                  The simulation is analyzing the language and signals in your
+                  application.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {error && (
+          <section
+            className="mt-16 border border-(--accent) p-8"
+            role="alert"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--accent)">
+              Evaluation unavailable
+            </p>
+
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed">
+              {error}
+            </p>
+
+            <p className="mt-4 max-w-2xl text-xs leading-relaxed text-(--muted)">
+              Make sure the Mirror API is running in your terminal with{" "}
+              <code className="font-mono">npm run api</code>, then refresh this
+              page and try again.
+            </p>
+          </section>
+        )}
+
+        {evaluation && (
+          <>
+            <section className="mt-16 grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+              <div className="border border-(--ink) p-8">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                  Simulated screening signal
+                </p>
+
+                <div className="mt-6 flex items-end gap-3">
+                  <span className="font-serif text-8xl leading-none">
+                    {evaluation.score}
+                  </span>
+
+                  <span className="mb-2 text-sm text-(--muted)">/ 100</span>
+                </div>
+
+                <div className="mt-8 border-t border-(--line) pt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm text-(--muted)">Simulation confidence</p>
+
+                    <span className="text-sm font-medium">
+                      {evaluation.confidence}
+                    </span>
+                  </div>
+
+                  <p className="mt-5 text-sm leading-relaxed text-(--muted)">
+                    This number represents a simulated signal generated from
+                    the current evaluation model. It is not an employability
+                    score.
                   </p>
-
-                  <p className="mt-2 text-sm leading-relaxed text-(--muted)">
-                    {signal.explanation}
-                  </p>
-
-                  {signal.quotes?.length > 0 && (
-                    <div className="mt-4 border-l border-(--line) pl-4">
-                      {signal.quotes.map((quote) => (
-                        <p
-                          key={quote}
-                          className="text-sm italic text-(--ink)"
-                        >
-                          &ldquo;{quote}&rdquo;
-                        </p>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <div className="mt-12 border-l-2 border-(--accent) pl-5">
-          <p className="text-sm leading-relaxed">
-            {evaluation.disclaimer}
-          </p>
-        </div>
+              <div className="border border-(--line) p-6">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                  Overall reasoning
+                </p>
+
+                <p className="mt-5 max-w-2xl text-base leading-relaxed">
+                  {evaluation.overallReasoning}
+                </p>
+
+                <div className="mt-8 border-t border-(--line) pt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                      Evaluation focus
+                    </p>
+
+                    <span className="text-xs text-(--muted)">
+                      {focusAreas.length} selected
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {focusAreas.map((area) => (
+                      <span
+                        key={area}
+                        className="border border-(--line) px-3 py-2 text-xs"
+                      >
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-10 border border-(--line)">
+              <div className="border-b border-(--line) px-6 py-5">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                  What the system may notice
+                </p>
+              </div>
+
+              <div className="divide-y divide-(--line)">
+                {evaluation.signals.map((signal, index) => (
+                  <article
+                    key={`${signal.category}-${index}`}
+                    className="grid gap-6 p-6 sm:grid-cols-[180px_1fr]"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">
+                        {signal.category}
+                      </p>
+
+                      <p className="mt-2 text-xs uppercase tracking-wide text-(--accent)">
+                        {signal.status}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="max-w-2xl text-sm leading-relaxed">
+                        {signal.explanation}
+                      </p>
+
+                      {signal.quotes?.length > 0 && (
+                        <div className="mt-5 border-l-2 border-(--accent) pl-5">
+                          <p className="mb-3 text-xs font-medium uppercase tracking-[0.12em] text-(--muted)">
+                            Evidence from your application
+                          </p>
+
+                          <div className="space-y-2">
+                            {signal.quotes.map((quote, quoteIndex) => (
+                              <p
+                                key={`${quote}-${quoteIndex}`}
+                                className="text-sm italic leading-relaxed"
+                              >
+                                &ldquo;{quote}&rdquo;
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-10 grid gap-10 border-t border-(--line) pt-10 lg:grid-cols-2">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                  Your application
+                </p>
+
+                <div className="mt-5 border border-(--line) p-6">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {applicationText}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                  What this means
+                </p>
+
+                <div className="mt-5 border border-(--line) p-6">
+                  <p className="text-sm leading-relaxed text-(--muted)">
+                    {evaluation.disclaimer}
+                  </p>
+
+                  <p className="mt-5 text-sm leading-relaxed">
+                    Your disability status or disclosure should never be
+                    treated as something you are required to hide.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <div className="mt-12 border-l-2 border-(--accent) pl-5">
+              <p className="text-sm leading-relaxed">
+                Educational simulation only. Mirror does not predict hiring
+                outcomes, determine employability, or represent the actual
+                screening system used by an employer.
+              </p>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
