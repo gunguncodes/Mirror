@@ -246,17 +246,111 @@ export default function TheRead({
               </div>
             </section>
 
-            <section className="mt-10 grid gap-10 border-t border-(--line) pt-10">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
-                  Your application
+            <section className="mt-10 border border-(--ink)">
+              <div className="border-b border-(--line) px-6 py-6">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--accent)">
+                  What you can actually do
                 </p>
 
-                <div className="mt-5 border border-(--line) p-6">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {applicationText}
-                  </p>
-                </div>
+                <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
+                  Turn the read into an action.
+                </h2>
+
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-(--muted)">
+                  These suggestions focus on changes you control: clarity,
+                  specificity, evidence, and how your existing experience is
+                  expressed.
+                </p>
+              </div>
+
+              <div className="divide-y divide-(--line)">
+                {evaluation.recommendations?.length > 0 ? (
+                  evaluation.recommendations.map((recommendation, index) => (
+                    <article
+                      key={`${recommendation.issue}-${index}`}
+                      className="p-6 sm:p-8"
+                    >
+                      <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--muted)">
+                            {String(index + 1).padStart(2, "0")}
+                          </p>
+
+                          <h3 className="mt-3 text-base font-medium">
+                            {recommendation.issue}
+                          </h3>
+                        </div>
+
+                        <div>
+                          {recommendation.evidence?.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium uppercase tracking-[0.12em] text-(--muted)">
+                                Evidence
+                              </p>
+
+                              <div className="mt-3 space-y-2 border-l-2 border-(--line) pl-4">
+                                {recommendation.evidence.map(
+                                  (evidence, evidenceIndex) => (
+                                    <p
+                                      key={`${evidence}-${evidenceIndex}`}
+                                      className="text-sm italic leading-relaxed"
+                                    >
+                                      &ldquo;{evidence}&rdquo;
+                                    </p>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-6">
+                            <p className="text-xs font-medium uppercase tracking-[0.12em] text-(--muted)">
+                              Why it may matter
+                            </p>
+
+                            <p className="mt-3 max-w-2xl text-sm leading-relaxed">
+                              {recommendation.whyItMatters}
+                            </p>
+                          </div>
+
+                          <div className="mt-6">
+                            <p className="text-xs font-medium uppercase tracking-[0.12em] text-(--muted)">
+                              Action
+                            </p>
+
+                            <p className="mt-3 max-w-2xl text-sm leading-relaxed">
+                              {recommendation.action}
+                            </p>
+                          </div>
+
+                          {recommendation.suggestedRevision && (
+                            <div className="mt-6 border border-(--line) p-5">
+                              <p className="text-xs font-medium uppercase tracking-[0.12em] text-(--muted)">
+                                Possible revision
+                              </p>
+
+                              <p className="mt-3 text-sm leading-relaxed">
+                                {recommendation.suggestedRevision}
+                              </p>
+
+                              <p className="mt-4 text-xs leading-relaxed text-(--muted)">
+                                Use this only if it accurately represents your
+                                real experience.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <div className="p-8">
+                    <p className="text-sm leading-relaxed text-(--muted)">
+                      Mirror did not identify a high-value wording change from
+                      the supplied application.
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
 

@@ -13,13 +13,16 @@ const evaluationSchema = {
       minimum: 0,
       maximum: 100,
     },
+
     confidence: {
       type: "string",
       enum: ["Low", "Moderate", "High"],
     },
+
     overallReasoning: {
       type: "string",
     },
+
     signals: {
       type: "array",
       items: {
@@ -28,6 +31,7 @@ const evaluationSchema = {
           category: {
             type: "string",
           },
+
           status: {
             type: "string",
             enum: [
@@ -37,9 +41,11 @@ const evaluationSchema = {
               "Needs analysis",
             ],
           },
+
           explanation: {
             type: "string",
           },
+
           quotes: {
             type: "array",
             items: {
@@ -47,18 +53,68 @@ const evaluationSchema = {
             },
           },
         },
-        required: ["category", "status", "explanation", "quotes"],
+
+        required: [
+          "category",
+          "status",
+          "explanation",
+          "quotes",
+        ],
       },
     },
+
+    recommendations: {
+      type: "array",
+      description:
+        "Concrete, candidate-controlled actions based only on the supplied application.",
+      items: {
+        type: "object",
+        properties: {
+          issue: {
+            type: "string",
+          },
+
+          evidence: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+          },
+
+          whyItMatters: {
+            type: "string",
+          },
+
+          action: {
+            type: "string",
+          },
+
+          suggestedRevision: {
+            type: "string",
+          },
+        },
+
+        required: [
+          "issue",
+          "evidence",
+          "whyItMatters",
+          "action",
+          "suggestedRevision",
+        ],
+      },
+    },
+
     disclaimer: {
       type: "string",
     },
   },
+
   required: [
     "score",
     "confidence",
     "overallReasoning",
     "signals",
+    "recommendations",
     "disclaimer",
   ],
 };
@@ -71,21 +127,26 @@ const comparisonSchema = {
       minimum: 0,
       maximum: 100,
     },
+
     revisedScore: {
       type: "integer",
       minimum: 0,
       maximum: 100,
     },
+
     scoreDifference: {
       type: "integer",
     },
+
     confidence: {
       type: "string",
       enum: ["Low", "Moderate", "High"],
     },
+
     summary: {
       type: "string",
     },
+
     changes: {
       type: "array",
       items: {
@@ -94,6 +155,7 @@ const comparisonSchema = {
           category: {
             type: "string",
           },
+
           direction: {
             type: "string",
             enum: [
@@ -102,15 +164,18 @@ const comparisonSchema = {
               "No meaningful change",
             ],
           },
+
           explanation: {
             type: "string",
           },
+
           originalEvidence: {
             type: "array",
             items: {
               type: "string",
             },
           },
+
           revisedEvidence: {
             type: "array",
             items: {
@@ -118,6 +183,7 @@ const comparisonSchema = {
             },
           },
         },
+
         required: [
           "category",
           "direction",
@@ -127,10 +193,12 @@ const comparisonSchema = {
         ],
       },
     },
+
     disclaimer: {
       type: "string",
     },
   },
+
   required: [
     "originalScore",
     "revisedScore",
@@ -164,6 +232,24 @@ GENERAL RULES:
 8. The score is a simulated screening signal, NOT an employability score.
 9. Do not invent facts about the candidate.
 10. Keep the analysis respectful and non-deterministic.
+
+RECOMMENDATION RULES:
+
+1. Recommendations must be based only on the supplied application.
+2. Do not invent experience, technologies, achievements, metrics, employers,
+   projects, education, or qualifications.
+3. Do not tell the candidate to add something they have not demonstrated.
+4. Focus on candidate-controlled improvements such as clarity, specificity,
+   action wording, role alignment, organization, and evidence.
+5. Every recommendation must contain exact evidence from the application when
+   relevant.
+6. Evidence must be copied exactly. Never fabricate or combine quotes.
+7. Suggested revisions may improve wording but must preserve the candidate's
+   underlying meaning and claimed experience.
+8. Do not recommend hiding disability, accommodation needs, or identity.
+9. If the application is already strong in an area, do not manufacture an issue.
+10. Prefer a small number of high-value recommendations over generic advice.
+11. Suggestions should be practical enough for the candidate to apply directly.
 
 COMPARISON RULES:
 
@@ -225,6 +311,7 @@ function createGeminiClient() {
 
   return new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
+
     httpOptions: {
       timeout: 30000,
     },
@@ -245,7 +332,8 @@ function isTemporaryGeminiError(error) {
     message.includes("503") ||
     message.includes("high demand") ||
     message.includes("unavailable") ||
-    message.includes("temporarily")
+    message.includes("temporarily") ||
+    message.includes("deadline exceeded")
   );
 }
 
@@ -262,7 +350,9 @@ async function generateWithRetry(ai, prompt, schema) {
     try {
       return await ai.models.generateContent({
         model: GEMINI_MODEL,
+
         contents: prompt,
+
         config: {
           responseMimeType: "application/json",
           responseSchema: schema,
@@ -330,6 +420,28 @@ ${text.trim()}
 
 Return the structured Mirror analysis.
 
+The response must contain:
+
+1. A simulated screening signal from 0 to 100.
+2. A confidence level.
+3. Overall reasoning.
+4. Observable screening signals.
+5. A small set of concrete recommendations the candidate can act on.
+6. A clear disclaimer.
+
+RECOMMENDATIONS:
+
+For each recommendation:
+
+- Identify one specific issue or opportunity.
+- Quote exact evidence from the application where appropriate.
+- Explain why the issue may matter in an automated screening context.
+- Give one practical action.
+- Give a possible revised version only when a revision can be made
+  without inventing experience or qualifications.
+
+Do not manufacture weaknesses simply to create recommendations.
+
 Every piece of evidence must be an exact quote from the application text.
 Keep quotes short and directly relevant.
 
@@ -338,7 +450,11 @@ This is a simulation of possible automated screening patterns.
 It is not an employer's actual score and not a prediction of a hiring outcome.
 `;
 
-  const result = await generateWithRetry(ai, prompt, evaluationSchema);
+  const result = await generateWithRetry(
+    ai,
+    prompt,
+    evaluationSchema
+  );
 
   return JSON.parse(result.text);
 }
@@ -423,7 +539,11 @@ Important:
 Return the structured comparison.
 `;
 
-  const result = await generateWithRetry(ai, prompt, comparisonSchema);
+  const result = await generateWithRetry(
+    ai,
+    prompt,
+    comparisonSchema
+  );
 
   return JSON.parse(result.text);
 }
@@ -437,6 +557,7 @@ const server = http.createServer(async (request, response) => {
     });
 
     response.end();
+
     return;
   }
 
@@ -483,5 +604,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Mirror API running at http://localhost:${PORT}`);
+  console.log(
+    `Mirror API running at http://localhost:${PORT}`
+  );
 });
