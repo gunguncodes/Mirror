@@ -66,7 +66,7 @@ const evaluationSchema = {
     recommendations: {
       type: "array",
       description:
-        "Concrete, candidate-controlled actions based only on the supplied application.",
+        "Concrete candidate-controlled actions grounded strictly in the supplied application.",
       items: {
         type: "object",
         properties: {
@@ -233,23 +233,82 @@ GENERAL RULES:
 9. Do not invent facts about the candidate.
 10. Keep the analysis respectful and non-deterministic.
 
+TRUST AND EVIDENCE RULES:
+
+1. The supplied application is the ONLY source of candidate facts.
+2. Never add a project, employer, internship, hackathon, technology,
+   responsibility, achievement, metric, result, education detail, certification,
+   job title, or other qualification that is not explicitly supported by the
+   application.
+3. Never assume that a vague statement implies a more specific fact.
+4. Never turn an implied possibility into a stated achievement.
+5. Never invent numbers, percentages, users, performance improvements,
+   rankings, awards, timelines, or outcomes.
+6. Never invent technologies merely because they are common for the target role.
+7. Never invent context such as "student project", "hackathon", "team of five",
+   "production application", or "real-world users" unless the application says
+   so.
+8. If the candidate has not supplied a metric, do not create one.
+9. If a useful improvement would require information that is missing, tell the
+   candidate what kind of real evidence they could add, but do not fabricate
+   that evidence.
+10. Suggested revisions must preserve the factual meaning of the original
+    application.
+11. A suggested revision may make existing information clearer, more specific,
+    concise, or action-oriented, but it must not create new facts.
+12. Every evidence quote must be copied exactly from the application.
+13. Never combine fragments from different parts of the application into a
+    quote.
+14. If there is not enough evidence for a safe revision, suggestedRevision must
+    be an empty string.
+
 RECOMMENDATION RULES:
 
-1. Recommendations must be based only on the supplied application.
-2. Do not invent experience, technologies, achievements, metrics, employers,
-   projects, education, or qualifications.
-3. Do not tell the candidate to add something they have not demonstrated.
-4. Focus on candidate-controlled improvements such as clarity, specificity,
-   action wording, role alignment, organization, and evidence.
-5. Every recommendation must contain exact evidence from the application when
-   relevant.
-6. Evidence must be copied exactly. Never fabricate or combine quotes.
-7. Suggested revisions may improve wording but must preserve the candidate's
-   underlying meaning and claimed experience.
-8. Do not recommend hiding disability, accommodation needs, or identity.
-9. If the application is already strong in an area, do not manufacture an issue.
-10. Prefer a small number of high-value recommendations over generic advice.
-11. Suggestions should be practical enough for the candidate to apply directly.
+1. Prefer 1–3 high-value recommendations.
+2. Only recommend a change when the application provides evidence for the
+   issue.
+3. Do not manufacture weaknesses just to produce recommendations.
+4. Recommendations should focus on candidate-controlled improvements such as:
+   clarity, specificity, action wording, role alignment, organization,
+   measurable evidence when the candidate can genuinely provide it, and
+   removing unnecessary ambiguity.
+5. When recommending measurable evidence, do NOT invent the number. Tell the
+   candidate to add a real number if they know it.
+6. If the application is already clear in an area, do not force a rewrite.
+7. Do not advise candidates to hide disability, accommodation needs, or identity.
+8. Do not frame a recommendation as a guarantee of better hiring outcomes.
+
+SAFE REVISION STANDARD:
+
+Before producing suggestedRevision, silently check:
+
+- Does every factual claim in the revision exist in the original application?
+- Did I introduce a technology that was not stated?
+- Did I introduce a metric that was not stated?
+- Did I introduce a project, employer, team, role, or achievement that was not stated?
+- Did I change the meaning of the original claim?
+- Did I make an assumption sound like a fact?
+
+If the answer to any of these is yes, do not use that revision.
+Return an empty suggestedRevision instead.
+
+LANGUAGE RULES:
+
+Prefer language such as:
+
+- "may make this signal more explicit"
+- "could make the experience easier for a screening system to interpret"
+- "this wording provides clearer evidence of..."
+- "in this simulation..."
+
+Avoid language such as:
+
+- "ATS will definitely..."
+- "the algorithm will..."
+- "this guarantees..."
+- "recruiters will..."
+- "you will get rejected..."
+- "this will get you shortlisted..."
 
 COMPARISON RULES:
 
@@ -437,8 +496,30 @@ For each recommendation:
 - Quote exact evidence from the application where appropriate.
 - Explain why the issue may matter in an automated screening context.
 - Give one practical action.
-- Give a possible revised version only when a revision can be made
-  without inventing experience or qualifications.
+- Give a possible revised version ONLY if it can be created entirely from
+  information already present in the application.
+
+If a revision would require a new fact, metric, technology, project,
+responsibility, achievement, or outcome, leave suggestedRevision empty.
+
+For example, if the application says:
+
+"Worked on frontend projects."
+
+A safe revision might be:
+
+"Worked on frontend projects involving..."
+
+ONLY if the words following "involving" already exist in the application.
+
+An unsafe revision would be:
+
+"Developed React applications used by 500 users."
+
+if React and 500 users were never mentioned.
+
+If a candidate could improve the application by adding real measurable
+evidence, say so in the action, but do not invent the measurement.
 
 Do not manufacture weaknesses simply to create recommendations.
 
