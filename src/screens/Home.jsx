@@ -14,11 +14,19 @@ export default function Home() {
     applicationType: "Resume",
     role: "",
     focusAreas: [],
+    jobDescription: "",
   });
+
+  const [analysis, setAnalysis] = useState(null);
 
   function handleApplicationSubmit(data) {
     setApplication(data);
+    setAnalysis(null);
     setScreen("read");
+  }
+
+  function handleAnalysisComplete(result) {
+    setAnalysis(result);
   }
 
   function handleOpenMirrorTest() {
@@ -40,7 +48,9 @@ export default function Home() {
         applicationType={application.applicationType}
         role={application.role}
         focusAreas={application.focusAreas}
+        jobDescription={application.jobDescription}
         onOpenMirrorTest={handleOpenMirrorTest}
+        onAnalysisComplete={handleAnalysisComplete}
       />
     );
   }
@@ -51,6 +61,9 @@ export default function Home() {
         originalText={application.text}
         applicationType={application.applicationType}
         role={application.role}
+        focusAreas={application.focusAreas}
+        jobDescription={application.jobDescription}
+        analysis={analysis}
         onBack={handleBackToRead}
       />
     );

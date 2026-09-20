@@ -14,13 +14,61 @@ export default function HeroContent({ onStart }) {
         might interpret their application.
       </p>
 
+      <p className="mt-5 max-w-xl text-base leading-relaxed text-(--muted)">
+        See the first read. Test a controlled revision. Compare what changes.
+      </p>
+
       <button
         type="button"
         onClick={onStart}
-        className="mt-10 border border-(--ink) bg-(--ink) px-6 py-3 text-sm font-medium text-(--paper) transition-colors hover:bg-(--paper) hover:text-(--ink)"
+        className="mt-9 border border-(--ink) bg-(--ink) px-6 py-3 text-sm font-medium text-(--paper) transition-colors hover:bg-(--paper) hover:text-(--ink)"
       >
         Run a Mirror check
       </button>
+
+      <div className="mt-10 grid max-w-xl grid-cols-3 border-y border-(--line) py-5">
+        <div className="border-r border-(--line) pr-4">
+          <p className="text-xs font-medium uppercase tracking-widest text-(--accent)">
+            01
+          </p>
+
+          <p className="mt-2 text-sm font-medium">
+            Read
+          </p>
+
+          <p className="mt-1 text-xs leading-relaxed text-(--muted)">
+            See how the application might be interpreted.
+          </p>
+        </div>
+
+        <div className="border-r border-(--line) px-4">
+          <p className="text-xs font-medium uppercase tracking-widest text-(--accent)">
+            02
+          </p>
+
+          <p className="mt-2 text-sm font-medium">
+            Revise
+          </p>
+
+          <p className="mt-1 text-xs leading-relaxed text-(--muted)">
+            Test a targeted Version B.
+          </p>
+        </div>
+
+        <div className="pl-4">
+          <p className="text-xs font-medium uppercase tracking-widest text-(--accent)">
+            03
+          </p>
+
+          <p className="mt-2 text-sm font-medium">
+            Compare
+          </p>
+
+          <p className="mt-1 text-xs leading-relaxed text-(--muted)">
+            See what changes in the simulated read.
+          </p>
+        </div>
+      </div>
 
       <p className="mt-5 max-w-md text-xs leading-relaxed text-(--muted)">
         An educational simulation — not a prediction of any employer&apos;s
